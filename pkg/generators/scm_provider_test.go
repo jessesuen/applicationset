@@ -87,6 +87,7 @@ func TestSCMProviderGenerateParams(t *testing.T) {
 				Repository:   "repo1",
 				URL:          "git@github.com:myorg/repo1.git",
 				Branch:       "main",
+				SHA:          "abcd1234",
 				Labels:       []string{"prod", "staging"},
 			},
 			{
@@ -94,6 +95,7 @@ func TestSCMProviderGenerateParams(t *testing.T) {
 				Repository:   "repo2",
 				URL:          "git@github.com:myorg/repo2.git",
 				Branch:       "main",
+				SHA:          "00000000",
 			},
 		},
 	}
@@ -107,6 +109,7 @@ func TestSCMProviderGenerateParams(t *testing.T) {
 	assert.Equal(t, "repo1", params[0]["repository"])
 	assert.Equal(t, "git@github.com:myorg/repo1.git", params[0]["url"])
 	assert.Equal(t, "main", params[0]["branch"])
+	assert.Equal(t, "abcd1234", params[0]["sha"])
 	assert.Equal(t, "prod,staging", params[0]["labels"])
 	assert.Equal(t, "repo2", params[1]["repository"])
 }
