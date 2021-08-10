@@ -14,13 +14,22 @@ func checkRateLimit(t *testing.T, err error) {
 	if err != nil && (strings.Contains(err.Error(), "rate limit exceeded") ||
 		(strings.Contains(err.Error(), "API rate limit") && strings.Contains(err.Error(), "still exceeded"))) {
 
-		allowRateLimitErrors := os.Getenv("CI") == ""
+		// GitHub Actions add this environment variable to indicate branch ref you are running on
+		githubRef := os.Getenv("GITHUB_REF")
+
+		// Only report rate limit errors as errors, when:
+		// - We are running in a GitHub action
+		// - AND, we are running that action on the 'master' or 'release-*' branch
+		// (unfortunately, for PRs, we don't have access to GitHub secrets that would allow us to embed a token)
+		failOnRateLimitErrors := os.Getenv("CI") != "" && (strings.Contains(githubRef, "/master") || strings.Contains(githubRef, "/release-"))
+
 		t.Logf("Got a rate limit error, consider setting $GITHUB_TOKEN to increase your GitHub API rate limit: %v\n", err)
-		if allowRateLimitErrors {
-			t.SkipNow()
-		} else {
+		if failOnRateLimitErrors {
 			t.FailNow()
+		} else {
+			t.SkipNow()
 		}
+
 	}
 }
 
