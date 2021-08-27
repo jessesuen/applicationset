@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/argoproj-labs/applicationset/common"
 	"github.com/argoproj-labs/applicationset/pkg/generators"
 	"github.com/argoproj-labs/applicationset/pkg/utils"
 	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -122,6 +123,15 @@ func (r *ApplicationSetReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	if r.Policy.Delete() {
 		err = r.deleteInCluster(ctx, applicationSetInfo, desiredApplications)
 		if err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	if applicationSetInfo.RefreshRequired() {
+		delete(applicationSetInfo.Annotations, common.AnnotationGitGeneratorRefresh)
+		err := r.Client.Update(ctx, &applicationSetInfo)
+		if err != nil {
+			log.Warnf("error occurred while updating ApplicationSet: %v", err)
 			return ctrl.Result{}, err
 		}
 	}

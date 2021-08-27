@@ -11,3 +11,4 @@ namespace: argocd
 resources:
 - deployment.yaml
 - rbac.yaml
+- service.yaml

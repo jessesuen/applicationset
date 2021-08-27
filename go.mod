@@ -16,6 +16,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.1
 	github.com/xanzy/go-gitlab v0.50.0
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
+	gopkg.in/go-playground/webhooks.v5 v5.11.0
 	k8s.io/api v0.21.1
 	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1

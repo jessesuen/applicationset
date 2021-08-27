@@ -7074,6 +7074,24 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: argocd-applicationset-controller
+    app.kubernetes.io/part-of: argocd-applicationset
+  name: argocd-applicationset-controller
+  namespace: argocd
+spec:
+  ports:
+  - name: webhook
+    port: 7000
+    protocol: TCP
+    targetPort: 7000
+  selector:
+    app.kubernetes.io/name: argocd-applicationset-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
     app.kubernetes.io/component: dex-server
     app.kubernetes.io/name: argocd-dex-server
     app.kubernetes.io/part-of: argocd
@@ -7222,6 +7240,8 @@ spec:
         image: quay.io/argoproj/argocd-applicationset:latest
         imagePullPolicy: Always
         name: argocd-applicationset-controller
+        ports:
+        - containerPort: 7000
         volumeMounts:
         - mountPath: /app/config/ssh
           name: ssh-known-hosts

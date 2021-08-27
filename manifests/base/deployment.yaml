@@ -21,6 +21,8 @@ spec:
           image: quay.io/argoproj/argocd-applicationset:latest
           imagePullPolicy: Always
           name: argocd-applicationset-controller
+          ports:
+          - containerPort: 7000
           env:
             - name: NAMESPACE
               valueFrom:

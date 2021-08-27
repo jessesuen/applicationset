@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -139,6 +140,14 @@ func main() {
 
 	argoCDDB := db.NewDB(namespace, argoSettingsMgr, k8s)
 
+	// start a webhook server that listens to incoming webhook payloads
+	webhookHandler, err := utils.NewWebhookHandler(namespace, argoSettingsMgr, mgr.GetClient())
+	if err != nil {
+		setupLog.Error(err, "failed to create webhook handler")
+		os.Exit(1)
+	}
+	startWebhookServer(webhookHandler)
+
 	baseGenerators := map[string]generators.Generator{
 		"List":                    generators.NewListGenerator(),
 		"Clusters":                generators.NewClusterGenerator(mgr.GetClient(), context.Background(), k8s, namespace),
@@ -196,4 +205,17 @@ func setLoggingLevel(debug bool, logLevel string) {
 		}
 		log.SetLevel(level)
 	}
+}
+
+func startWebhookServer(webhookHandler *utils.WebhookHandler) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/webhook", webhookHandler.Handler)
+	go func() {
+		setupLog.Info("Starting webhook server")
+		err := http.ListenAndServe(":7000", mux)
+		if err != nil {
+			setupLog.Error(err, "failed to start webhook server")
+			os.Exit(1)
+		}
+	}()
 }

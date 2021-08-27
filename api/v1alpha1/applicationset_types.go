@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/argoproj-labs/applicationset/common"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -219,4 +220,10 @@ type ApplicationSetList struct {
 
 func init() {
 	SchemeBuilder.Register(&ApplicationSet{}, &ApplicationSetList{})
+}
+
+// RefreshRequired checks if the ApplicationSet needs to be refreshed
+func (a *ApplicationSet) RefreshRequired() bool {
+	_, found := a.Annotations[common.AnnotationGitGeneratorRefresh]
+	return found
 }
