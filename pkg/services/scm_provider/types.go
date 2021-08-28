@@ -11,6 +11,7 @@ type Repository struct {
 	Repository   string
 	URL          string
 	Branch       string
+	SHA          string
 	Labels       []string
 }
 

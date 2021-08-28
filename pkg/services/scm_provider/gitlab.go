@@ -72,7 +72,8 @@ func (g *GitlabProvider) ListRepos(ctx context.Context, cloneProtocol string) ([
 					Organization: gitlabRepo.Namespace.FullPath,
 					Repository:   gitlabRepo.Path,
 					URL:          url,
-					Branch:       branch,
+					Branch:       branch.Name,
+					SHA:          branch.Commit.ID,
 					Labels:       gitlabRepo.TagList,
 				})
 			}
@@ -103,23 +104,28 @@ func (g *GitlabProvider) RepoHasPath(_ context.Context, repo *Repository, path s
 	return true, nil
 }
 
-func (g *GitlabProvider) listBranches(_ context.Context, repo *gitlab.Project) ([]string, error) {
+func (g *GitlabProvider) listBranches(_ context.Context, repo *gitlab.Project) ([]gitlab.Branch, error) {
+	branches := []gitlab.Branch{}
 	// If we don't specifically want to query for all branches, just use the default branch and call it a day.
 	if !g.allBranches {
-		return []string{repo.DefaultBranch}, nil
+		gitlabBranch, _, err := g.client.Branches.GetBranch(repo.ID, repo.DefaultBranch, nil)
+		if err != nil {
+			return nil, err
+		}
+		branches = append(branches, *gitlabBranch)
+		return branches, nil
 	}
 	// Otherwise, scrape the ListBranches API.
 	opt := &gitlab.ListBranchesOptions{
 		ListOptions: gitlab.ListOptions{PerPage: 100},
 	}
-	branches := []string{}
 	for {
 		gitlabBranches, resp, err := g.client.Branches.ListBranches(repo.ID, opt)
 		if err != nil {
 			return nil, err
 		}
 		for _, gitlabBranch := range gitlabBranches {
-			branches = append(branches, gitlabBranch.Name)
+			branches = append(branches, *gitlabBranch)
 		}
 
 		if resp.NextPage == 0 {

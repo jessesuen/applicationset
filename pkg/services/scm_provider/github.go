@@ -74,7 +74,8 @@ func (g *GithubProvider) ListRepos(ctx context.Context, cloneProtocol string) ([
 					Organization: githubRepo.Owner.GetLogin(),
 					Repository:   githubRepo.GetName(),
 					URL:          url,
-					Branch:       branch,
+					Branch:       branch.GetName(),
+					SHA:          branch.GetCommit().GetSHA(),
 					Labels:       githubRepo.Topics,
 				})
 			}
@@ -101,23 +102,27 @@ func (g *GithubProvider) RepoHasPath(ctx context.Context, repo *Repository, path
 	return true, nil
 }
 
-func (g *GithubProvider) listBranches(ctx context.Context, repo *github.Repository) ([]string, error) {
+func (g *GithubProvider) listBranches(ctx context.Context, repo *github.Repository) ([]github.Branch, error) {
 	// If we don't specifically want to query for all branches, just use the default branch and call it a day.
 	if !g.allBranches {
-		return []string{repo.GetDefaultBranch()}, nil
+		defaultBranch, _, err := g.client.Repositories.GetBranch(ctx, repo.Owner.GetLogin(), repo.GetName(), repo.GetDefaultBranch())
+		if err != nil {
+			return nil, err
+		}
+		return []github.Branch{*defaultBranch}, nil
 	}
 	// Otherwise, scrape the ListBranches API.
 	opt := &github.BranchListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
-	branches := []string{}
+	branches := []github.Branch{}
 	for {
 		githubBranches, resp, err := g.client.Repositories.ListBranches(ctx, repo.Owner.GetLogin(), repo.GetName(), opt)
 		if err != nil {
 			return nil, err
 		}
 		for _, githubBranch := range githubBranches {
-			branches = append(branches, githubBranch.GetName())
+			branches = append(branches, *githubBranch)
 		}
 
 		if resp.NextPage == 0 {

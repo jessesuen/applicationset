@@ -93,6 +93,7 @@ func (g *SCMProviderGenerator) GenerateParams(appSetGenerator *argoprojiov1alpha
 			"repository":   repo.Repository,
 			"url":          repo.URL,
 			"branch":       repo.Branch,
+			"sha":          repo.SHA,
 			"labels":       strings.Join(repo.Labels, ","),
 		})
 	}
