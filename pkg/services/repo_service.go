@@ -24,14 +24,11 @@ type argoCDService struct {
 
 type Repos interface {
 
-	// GetFilePaths returns a list of files (not directories) within the target repo
-	GetFilePaths(ctx context.Context, repoURL string, revision string, pattern string) ([]string, error)
+	// GetFiles returns content of files (not directories) within the target repo
+	GetFiles(ctx context.Context, repoURL string, revision string, pattern string) (map[string][]byte, error)
 
 	// GetDirectories returns a list of directories (not files) within the target repo
 	GetDirectories(ctx context.Context, repoURL string, revision string) ([]string, error)
-
-	// GetFileContent returns the contents of a particular repository file
-	GetFileContent(ctx context.Context, repoURL string, revision string, path string) ([]byte, error)
 }
 
 func NewArgoCDService(db db.ArgoDB, repoServerAddress string) Repos {
@@ -41,7 +38,7 @@ func NewArgoCDService(db db.ArgoDB, repoServerAddress string) Repos {
 	}
 }
 
-func (a *argoCDService) GetFilePaths(ctx context.Context, repoURL string, revision string, pattern string) ([]string, error) {
+func (a *argoCDService) GetFiles(ctx context.Context, repoURL string, revision string, pattern string) (map[string][]byte, error) {
 	repo, err := a.repositoriesDB.GetRepository(ctx, repoURL)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in GetRepository")
@@ -63,7 +60,16 @@ func (a *argoCDService) GetFilePaths(ctx context.Context, repoURL string, revisi
 		return nil, errors.Wrap(err, "Error during listing files of local repo")
 	}
 
-	return paths, nil
+	res := map[string][]byte{}
+	for _, filePath := range paths {
+		bytes, err := os.ReadFile(filepath.Join(gitRepoClient.Root(), filePath))
+		if err != nil {
+			return nil, err
+		}
+		res[filePath] = bytes
+	}
+
+	return res, nil
 }
 
 func (a *argoCDService) GetDirectories(ctx context.Context, repoURL string, revision string) ([]string, error) {
@@ -118,31 +124,6 @@ func (a *argoCDService) GetDirectories(ctx context.Context, repoURL string, revi
 
 	return filteredPaths, nil
 
-}
-
-func (a *argoCDService) GetFileContent(ctx context.Context, repoURL string, revision string, path string) ([]byte, error) {
-	repo, err := a.repositoriesDB.GetRepository(ctx, repoURL)
-	if err != nil {
-		return nil, errors.Wrap(err, "Error in GetRepository")
-	}
-
-	gitRepoClient, err := git.NewClient(repo.Repo, repo.GetGitCreds(), repo.IsInsecure(), repo.IsLFSEnabled(), repo.Proxy)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = checkoutRepo(gitRepoClient, revision)
-	if err != nil {
-		return nil, err
-	}
-
-	bytes, err := os.ReadFile(filepath.Join(gitRepoClient.Root(), path))
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
 }
 
 func checkoutRepo(gitRepoClient git.Client, revision string) error {

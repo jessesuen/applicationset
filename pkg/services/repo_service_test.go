@@ -3,10 +3,7 @@ package services
 import (
 	"context"
 	"errors"
-	"os"
-	"path/filepath"
 	"sort"
-	"strings"
 	"testing"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -104,7 +101,7 @@ func TestGetDirectories(t *testing.T) {
 	}
 }
 
-func TestGetPaths(t *testing.T) {
+func TestGetFiles(t *testing.T) {
 
 	// Hardcode a specific commit, so that changes to argoproj/argocd-example-apps/ don't break our tests
 	// "chore: downgrade kustomize guestbook image tag (#73)"
@@ -214,7 +211,7 @@ func TestGetPaths(t *testing.T) {
 				repositoriesDB: argocdRepositoryMock,
 			}
 
-			getPathsRes, err := argocd.GetFilePaths(context.Background(), cc.repoURL, cc.revision, cc.pattern)
+			getPathsRes, err := argocd.GetFiles(context.Background(), cc.repoURL, cc.revision, cc.pattern)
 
 			if cc.expectedError == nil {
 
@@ -232,103 +229,4 @@ func TestGetPaths(t *testing.T) {
 			}
 		})
 	}
-
-}
-
-func TestGetFileContent(t *testing.T) {
-
-	// Hardcode a specific commit, so that changes to argoproj/argocd-example-apps/ don't break our tests
-	// "chore: downgrade kustomize guestbook image tag (#73)"
-	commitID := "08f72e2a309beab929d9fd14626071b1a61a47f9"
-
-	tests := []struct {
-		name     string
-		repoURL  string
-		revision string
-		path     string
-		repoRes  *v1alpha1.Repository
-		repoErr  error
-
-		expectedFileContentsSubstring string
-		expectedError                 error
-	}{
-		{
-			name: "pull a specific path of a revision of example apps",
-			repoRes: &v1alpha1.Repository{
-				Insecure:              true,
-				InsecureIgnoreHostKey: true,
-				Repo:                  "https://github.com/argoproj/argocd-example-apps/",
-			},
-			repoURL:                       "https://github.com/argoproj/argocd-example-apps/",
-			revision:                      commitID,
-			path:                          "/README.md",
-			expectedFileContentsSubstring: "This repository contains example applications for demoing ArgoCD functionality",
-		},
-		{
-			name: "pull another specific path of a revision of example apps",
-			repoRes: &v1alpha1.Repository{
-				Insecure:              true,
-				InsecureIgnoreHostKey: true,
-				Repo:                  "https://github.com/argoproj/argocd-example-apps/",
-			},
-			repoURL:                       "https://github.com/argoproj/argocd-example-apps/",
-			revision:                      commitID,
-			path:                          "/helm-guestbook/Chart.yaml",
-			expectedFileContentsSubstring: "A Helm chart for Kubernetes",
-		},
-
-		{
-			name: "pull an invalid revison",
-			repoRes: &v1alpha1.Repository{
-				Insecure:              true,
-				InsecureIgnoreHostKey: true,
-				Repo:                  "https://github.com/argoproj/argocd-example-apps/",
-			},
-			repoURL:       "https://github.com/argoproj/argocd-example-apps/",
-			revision:      "this-tag-does-not-exist",
-			path:          "/README.md",
-			expectedError: errors.New("Error during fetching repo: `git fetch origin this-tag-does-not-exist --tags --force` failed exit status 128: fatal: couldn't find remote ref this-tag-does-not-exist"),
-		},
-		{
-			name: "pull an invalid file",
-			repoRes: &v1alpha1.Repository{
-				Insecure:              true,
-				InsecureIgnoreHostKey: true,
-				Repo:                  "https://github.com/argoproj/argocd-example-apps/",
-			},
-			repoURL:       "https://github.com/argoproj/argocd-example-apps/",
-			revision:      commitID,
-			path:          "/this-file-does-not-exist.md",
-			expectedError: errors.New("open " + filepath.Join(os.TempDir()+"/https___github.com_argoproj_argocd-example-apps_/this-file-does-not-exist.md"+": no such file or directory")),
-		},
-	}
-
-	for _, cc := range tests {
-
-		// Get the file contents of a specific path and revision, and confirm it has the expected value (or the expected error is returned.)
-		t.Run(cc.name, func(t *testing.T) {
-
-			argocdRepositoryMock := ArgocdRepositoryMock{mock: &mock.Mock{}}
-
-			argocd := argoCDService{
-				repositoriesDB: argocdRepositoryMock,
-			}
-
-			argocdRepositoryMock.mock.On("GetRepository", mock.Anything, cc.repoURL).Return(cc.repoRes, cc.repoErr)
-
-			fileContentRes, err := argocd.GetFileContent(context.Background(), cc.repoURL, cc.revision, cc.path)
-
-			if cc.expectedError == nil {
-
-				// File contents should contain the expected string
-				assert.True(t, strings.Contains(string(fileContentRes), cc.expectedFileContentsSubstring))
-				assert.NoError(t, err)
-
-			} else {
-				assert.EqualError(t, err, cc.expectedError.Error())
-			}
-
-		})
-	}
-
 }

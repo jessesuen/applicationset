@@ -29,10 +29,10 @@ func (a argoCDServiceMock) GetApps(ctx context.Context, repoURL string, revision
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (a argoCDServiceMock) GetFilePaths(ctx context.Context, repoURL string, revision string, pattern string) ([]string, error) {
+func (a argoCDServiceMock) GetFiles(ctx context.Context, repoURL string, revision string, pattern string) (map[string][]byte, error) {
 	args := a.mock.Called(ctx, repoURL, revision, pattern)
 
-	return args.Get(0).([]string), args.Error(1)
+	return args.Get(0).(map[string][]byte), args.Error(1)
 }
 
 func (a argoCDServiceMock) GetFileContent(ctx context.Context, repoURL string, revision string, path string) ([]byte, error) {
@@ -185,24 +185,16 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 		name string
 		// files is the list of paths/globs to match
 		files []argoprojiov1alpha1.GitFileGeneratorItem
-		// repoPaths is the list of matching paths in the simulated git repository
-		repoPaths []string
 		// repoFileContents maps repo path to the literal contents of that path
 		repoFileContents map[string][]byte
 		// if repoPathsError is non-nil, the call to GetPaths(...) will return this error value
 		repoPathsError error
-		// if repoFileContentsErrors contains a path key, the error value will be returned on the call to GetFileContents(...)
-		repoFileContentsErrors map[string]error
-		expected               []map[string]string
-		expectedError          error
+		expected       []map[string]string
+		expectedError  error
 	}{
 		{
 			name:  "happy flow: create params from git files",
 			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
-			repoPaths: []string{
-				"cluster-config/production/config.json",
-				"cluster-config/staging/config.json",
-			},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.json": []byte(`{
    "cluster": {
@@ -227,8 +219,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
    }
 }`),
 			},
-			repoPathsError:         nil,
-			repoFileContentsErrors: nil,
+			repoPathsError: nil,
 			expected: []map[string]string{
 				{
 					"cluster.owner":        "john.doe@example.com",
@@ -252,60 +243,26 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name:                   "handles error during getting repo paths",
-			files:                  []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
-			repoPaths:              []string{},
-			repoFileContents:       map[string][]byte{},
-			repoPathsError:         fmt.Errorf("paths error"),
-			repoFileContentsErrors: nil,
-			expected:               []map[string]string{},
-			expectedError:          fmt.Errorf("paths error"),
-		},
-		{
-			name:  "handles error during getting repo file contents",
-			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
-			repoPaths: []string{
-				"cluster-config/production/config.json",
-				"cluster-config/staging/config.json",
-			},
-			repoFileContents: map[string][]byte{
-				"cluster-config/production/config.json": []byte(`{
-   "cluster": {
-       "owner": "john.doe@example.com",
-       "name": "production",
-       "address": "https://kubernetes.default.svc"
-   }
-}`),
-				"cluster-config/staging/config.json": nil,
-			},
-			repoPathsError: nil,
-			repoFileContentsErrors: map[string]error{
-				"cluster-config/production/config.json": nil,
-				"cluster-config/staging/config.json":    fmt.Errorf("staging config file get content error"),
-			},
-			expected:      []map[string]string{},
-			expectedError: fmt.Errorf("unable to process file 'cluster-config/staging/config.json': staging config file get content error"),
+			name:             "handles error during getting repo paths",
+			files:            []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
+			repoFileContents: map[string][]byte{},
+			repoPathsError:   fmt.Errorf("paths error"),
+			expected:         []map[string]string{},
+			expectedError:    fmt.Errorf("paths error"),
 		},
 		{
 			name:  "test invalid JSON file returns error",
 			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
-			repoPaths: []string{
-				"cluster-config/production/config.json",
-			},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.json": []byte(`invalid json file`),
 			},
-			repoPathsError:         nil,
-			repoFileContentsErrors: map[string]error{},
-			expected:               []map[string]string{},
-			expectedError:          fmt.Errorf("unable to process file 'cluster-config/production/config.json': unable to parse file: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal string into Go value of type map[string]interface {}"),
+			repoPathsError: nil,
+			expected:       []map[string]string{},
+			expectedError:  fmt.Errorf("unable to process file 'cluster-config/production/config.json': unable to parse file: error unmarshaling JSON: while decoding JSON: json: cannot unmarshal string into Go value of type map[string]interface {}"),
 		},
 		{
 			name:  "test JSON array",
 			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
-			repoPaths: []string{
-				"cluster-config/production/config.json",
-			},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.json": []byte(`
 [
@@ -328,8 +285,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 	}
 ]`),
 			},
-			repoPathsError:         nil,
-			repoFileContentsErrors: map[string]error{},
+			repoPathsError: nil,
 			expected: []map[string]string{
 				{
 					"cluster.owner":     "john.doe@example.com",
@@ -352,10 +308,6 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 		{
 			name:  "Test YAML flow",
 			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.yaml"}},
-			repoPaths: []string{
-				"cluster-config/production/config.yaml",
-				"cluster-config/staging/config.yaml",
-			},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.yaml": []byte(`
 cluster:
@@ -375,8 +327,7 @@ cluster:
   address: https://kubernetes.default.svc
 `),
 			},
-			repoPathsError:         nil,
-			repoFileContentsErrors: nil,
+			repoPathsError: nil,
 			expected: []map[string]string{
 				{
 					"cluster.owner":        "john.doe@example.com",
@@ -401,9 +352,6 @@ cluster:
 		{
 			name:  "test YAML array",
 			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.yaml"}},
-			repoPaths: []string{
-				"cluster-config/production/config.yaml",
-			},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.yaml": []byte(`
 - cluster:
@@ -417,8 +365,7 @@ cluster:
     name: staging
     address: https://kubernetes.default.svc`),
 			},
-			repoPathsError:         nil,
-			repoFileContentsErrors: map[string]error{},
+			repoPathsError: nil,
 			expected: []map[string]string{
 				{
 					"cluster.owner":     "john.doe@example.com",
@@ -444,14 +391,8 @@ cluster:
 		cc := c
 		t.Run(cc.name, func(t *testing.T) {
 			argoCDServiceMock := argoCDServiceMock{mock: &mock.Mock{}}
-			argoCDServiceMock.mock.On("GetFilePaths", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-				Return(c.repoPaths, c.repoPathsError)
-			if c.repoPaths != nil {
-				for _, repoPath := range c.repoPaths {
-					argoCDServiceMock.mock.On("GetFileContent", mock.Anything, mock.Anything, mock.Anything, repoPath).
-						Return(c.repoFileContents[repoPath], c.repoFileContentsErrors[repoPath]).Once()
-				}
-			}
+			argoCDServiceMock.mock.On("GetFiles", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+				Return(c.repoFileContents, c.repoPathsError)
 
 			var gitGenerator = NewGitGenerator(argoCDServiceMock)
 			applicationSetInfo := argoprojiov1alpha1.ApplicationSet{

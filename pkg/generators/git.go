@@ -92,22 +92,22 @@ func (g *GitGenerator) generateParamsForGitDirectories(appSetGenerator *argoproj
 
 func (g *GitGenerator) generateParamsForGitFiles(appSetGenerator *argoprojiov1alpha1.ApplicationSetGenerator) ([]map[string]string, error) {
 
-	// Get all paths that match the requested path string, removing duplicates
-	allPathsMap := make(map[string]bool)
+	// Get all files that match the requested path string, removing duplicates
+	allFiles := make(map[string][]byte)
 	for _, requestedPath := range appSetGenerator.Git.Files {
-		paths, err := g.repos.GetFilePaths(context.TODO(), appSetGenerator.Git.RepoURL, appSetGenerator.Git.Revision, requestedPath.Path)
+		files, err := g.repos.GetFiles(context.TODO(), appSetGenerator.Git.RepoURL, appSetGenerator.Git.Revision, requestedPath.Path)
 		if err != nil {
 			return nil, err
 		}
-		for _, path := range paths {
-			allPathsMap[path] = true
+		for filePath, content := range files {
+			allFiles[filePath] = content
 		}
 	}
 
 	// Extract the unduplicated map into a list, and sort by path to ensure a deterministic
 	// processing order in the subsequent step
 	allPaths := []string{}
-	for path := range allPathsMap {
+	for path := range allFiles {
 		allPaths = append(allPaths, path)
 	}
 	sort.Strings(allPaths)
@@ -117,7 +117,7 @@ func (g *GitGenerator) generateParamsForGitFiles(appSetGenerator *argoprojiov1al
 	for _, path := range allPaths {
 
 		// A JSON / YAML file path can contain multiple sets of parameters (ie it is an array)
-		paramsArray, err := g.generateParamsFromGitFile(appSetGenerator, path)
+		paramsArray, err := g.generateParamsFromGitFile(path, allFiles[path])
 		if err != nil {
 			return nil, fmt.Errorf("unable to process file '%s': %v", path, err)
 		}
@@ -129,17 +129,11 @@ func (g *GitGenerator) generateParamsForGitFiles(appSetGenerator *argoprojiov1al
 	return res, nil
 }
 
-func (g *GitGenerator) generateParamsFromGitFile(appSetGenerator *argoprojiov1alpha1.ApplicationSetGenerator, filePath string) ([]map[string]string, error) {
-
-	fileContent, err := g.repos.GetFileContent(context.TODO(), appSetGenerator.Git.RepoURL, appSetGenerator.Git.Revision, filePath)
-	if err != nil {
-		return nil, err
-	}
-
+func (g *GitGenerator) generateParamsFromGitFile(filePath string, fileContent []byte) ([]map[string]string, error) {
 	objectsFound := []map[string]interface{}{}
 
 	// First, we attempt to parse as an array
-	err = yaml.Unmarshal(fileContent, &objectsFound)
+	err := yaml.Unmarshal(fileContent, &objectsFound)
 	if err != nil {
 		// If unable to parse as an array, attempt to parse as a single object
 		singleObj := make(map[string]interface{})
