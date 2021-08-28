@@ -83,6 +83,7 @@ func TestGenerateParams(t *testing.T) {
 	}
 	testCases := []struct {
 		name     string
+		names    []string
 		selector metav1.LabelSelector
 		values   map[string]string
 		expected []map[string]string
@@ -92,6 +93,7 @@ func TestGenerateParams(t *testing.T) {
 	}{
 		{
 			name:     "no label selector",
+			names:    nil,
 			selector: metav1.LabelSelector{},
 			values:   nil,
 			expected: []map[string]string{
@@ -107,7 +109,23 @@ func TestGenerateParams(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "secret type label selector",
+			name:     "names list",
+			names:    []string{"production-01", "staging-01"},
+			selector: metav1.LabelSelector{},
+			values:   nil,
+			expected: []map[string]string{
+				{"name": "production-01", "server": "https://production-01.example.com", "metadata.labels.environment": "production", "metadata.labels.org": "bar",
+					"metadata.labels.argocd.argoproj.io/secret-type": "cluster", "metadata.annotations.foo.argoproj.io": "production"},
+
+				{"name": "staging-01", "server": "https://staging-01.example.com", "metadata.labels.environment": "staging", "metadata.labels.org": "foo",
+					"metadata.labels.argocd.argoproj.io/secret-type": "cluster", "metadata.annotations.foo.argoproj.io": "staging"},
+			},
+			clientError:   false,
+			expectedError: nil,
+		},
+		{
+			name:  "names list and label selector",
+			names: []string{"in-cluster"}, // should be ignored
 			selector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"argocd.argoproj.io/secret-type": "cluster",
@@ -125,7 +143,27 @@ func TestGenerateParams(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "production-only",
+			name:  "secret type label selector",
+			names: nil,
+			selector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"argocd.argoproj.io/secret-type": "cluster",
+				},
+			},
+			values: nil,
+			expected: []map[string]string{
+				{"name": "production-01", "server": "https://production-01.example.com", "metadata.labels.environment": "production", "metadata.labels.org": "bar",
+					"metadata.labels.argocd.argoproj.io/secret-type": "cluster", "metadata.annotations.foo.argoproj.io": "production"},
+
+				{"name": "staging-01", "server": "https://staging-01.example.com", "metadata.labels.environment": "staging", "metadata.labels.org": "foo",
+					"metadata.labels.argocd.argoproj.io/secret-type": "cluster", "metadata.annotations.foo.argoproj.io": "staging"},
+			},
+			clientError:   false,
+			expectedError: nil,
+		},
+		{
+			name:  "production-only",
+			names: nil,
 			selector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"environment": "production",
@@ -142,7 +180,8 @@ func TestGenerateParams(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "production or staging",
+			name:  "production or staging",
+			names: nil,
 			selector: metav1.LabelSelector{
 				MatchExpressions: []metav1.LabelSelectorRequirement{
 					{
@@ -168,7 +207,8 @@ func TestGenerateParams(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "production or staging with match labels",
+			name:  "production or staging with match labels",
+			names: nil,
 			selector: metav1.LabelSelector{
 				MatchExpressions: []metav1.LabelSelectorRequirement{
 					{
@@ -196,6 +236,7 @@ func TestGenerateParams(t *testing.T) {
 		},
 		{
 			name:          "simulate client error",
+			names:         nil,
 			selector:      metav1.LabelSelector{},
 			values:        nil,
 			expected:      nil,
@@ -226,6 +267,7 @@ func TestGenerateParams(t *testing.T) {
 
 			got, err := clusterGenerator.GenerateParams(&argoprojiov1alpha1.ApplicationSetGenerator{
 				Clusters: &argoprojiov1alpha1.ClusterGenerator{
+					Names:    testCase.names,
 					Selector: testCase.selector,
 					Values:   testCase.values,
 				},

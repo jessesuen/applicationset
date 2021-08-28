@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 
 	argoprojiov1alpha1 "github.com/argoproj-labs/applicationset/api/v1alpha1"
-	"github.com/argoproj-labs/applicationset/pkg/generators"
+	"github.com/argoproj-labs/applicationset/pkg/utils"
 )
 
 // clusterSecretEventHandler is used when watching Secrets to check if they are ArgoCD Cluster Secrets, and if so
@@ -48,7 +48,7 @@ type addRateLimitingInterface interface {
 func (h *clusterSecretEventHandler) queueRelatedAppGenerators(q addRateLimitingInterface, object client.Object) {
 
 	// Check for label, lookup all ApplicationSets that might match the cluster, queue them all
-	if object.GetLabels()[generators.ArgoCDSecretTypeLabel] != generators.ArgoCDSecretTypeCluster {
+	if object.GetLabels()[utils.ArgoCDSecretTypeLabel] != utils.ArgoCDSecretTypeCluster {
 		return
 	}
 

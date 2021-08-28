@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	argoprojiov1alpha1 "github.com/argoproj-labs/applicationset/api/v1alpha1"
-	"github.com/argoproj-labs/applicationset/pkg/generators"
+	"github.com/argoproj-labs/applicationset/pkg/utils"
 	argov1alpha1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -40,7 +40,7 @@ func TestClusterEventHandler(t *testing.T) {
 					Namespace: "argocd",
 					Name:      "my-secret",
 					Labels: map[string]string{
-						generators.ArgoCDSecretTypeLabel: generators.ArgoCDSecretTypeCluster,
+						utils.ArgoCDSecretTypeLabel: utils.ArgoCDSecretTypeCluster,
 					},
 				},
 			},
@@ -68,7 +68,7 @@ func TestClusterEventHandler(t *testing.T) {
 					Namespace: "argocd",
 					Name:      "my-secret",
 					Labels: map[string]string{
-						generators.ArgoCDSecretTypeLabel: generators.ArgoCDSecretTypeCluster,
+						utils.ArgoCDSecretTypeLabel: utils.ArgoCDSecretTypeCluster,
 					},
 				},
 			},
@@ -111,7 +111,7 @@ func TestClusterEventHandler(t *testing.T) {
 					Namespace: "argocd",
 					Name:      "my-secret",
 					Labels: map[string]string{
-						generators.ArgoCDSecretTypeLabel: generators.ArgoCDSecretTypeCluster,
+						utils.ArgoCDSecretTypeLabel: utils.ArgoCDSecretTypeCluster,
 					},
 				},
 			},
@@ -155,7 +155,7 @@ func TestClusterEventHandler(t *testing.T) {
 					Namespace: "argocd",
 					Name:      "my-secret",
 					Labels: map[string]string{
-						generators.ArgoCDSecretTypeLabel: generators.ArgoCDSecretTypeCluster,
+						utils.ArgoCDSecretTypeLabel: utils.ArgoCDSecretTypeCluster,
 					},
 				},
 			},

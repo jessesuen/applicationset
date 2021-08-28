@@ -580,6 +580,14 @@ spec:
                       description: ClusterGenerator defines a generator to match against
                         clusters registered with ArgoCD.
                       properties:
+                        names:
+                          description: Names defines a set of cluster names to match
+                            against all clusters registered with Argo CD. Clusters
+                            today are stored as Kubernetes Secrets. The name key is
+                            used for matching.
+                          items:
+                            type: string
+                          type: array
                         selector:
                           description: Selector defines a label selector to match
                             against all clusters registered with ArgoCD. Clusters
@@ -2653,6 +2661,14 @@ spec:
                                 description: ClusterGenerator defines a generator
                                   to match against clusters registered with ArgoCD.
                                 properties:
+                                  names:
+                                    description: Names defines a set of cluster names
+                                      to match against all clusters registered with
+                                      Argo CD. Clusters today are stored as Kubernetes
+                                      Secrets. The name key is used for matching.
+                                    items:
+                                      type: string
+                                    type: array
                                   selector:
                                     description: Selector defines a label selector
                                       to match against all clusters registered with

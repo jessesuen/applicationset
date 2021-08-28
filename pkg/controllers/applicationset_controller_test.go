@@ -916,7 +916,7 @@ func TestRemoveFinalizerOnInvalidDestination_FinalizerTypes(t *testing.T) {
 					Name:      "my-secret",
 					Namespace: "namespace",
 					Labels: map[string]string{
-						generators.ArgoCDSecretTypeLabel: generators.ArgoCDSecretTypeCluster,
+						utils.ArgoCDSecretTypeLabel: utils.ArgoCDSecretTypeCluster,
 					},
 				},
 				Data: map[string][]byte{
@@ -1075,7 +1075,7 @@ func TestRemoveFinalizerOnInvalidDestination_DestinationTypes(t *testing.T) {
 					Name:      "my-secret",
 					Namespace: "namespace",
 					Labels: map[string]string{
-						generators.ArgoCDSecretTypeLabel: generators.ArgoCDSecretTypeCluster,
+						utils.ArgoCDSecretTypeLabel: utils.ArgoCDSecretTypeCluster,
 					},
 				},
 				Data: map[string][]byte{
@@ -1739,7 +1739,7 @@ func TestValidateGeneratedApplications(t *testing.T) {
 					Name:      "my-secret",
 					Namespace: "namespace",
 					Labels: map[string]string{
-						generators.ArgoCDSecretTypeLabel: generators.ArgoCDSecretTypeCluster,
+						utils.ArgoCDSecretTypeLabel: utils.ArgoCDSecretTypeCluster,
 					},
 				},
 				Data: map[string][]byte{

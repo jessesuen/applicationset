@@ -110,6 +110,10 @@ type ClusterGenerator struct {
 	Selector metav1.LabelSelector   `json:"selector,omitempty"`
 	Template ApplicationSetTemplate `json:"template,omitempty"`
 
+	// Names defines a set of cluster names to match against all clusters registered with Argo
+	// CD. Clusters today are stored as Kubernetes Secrets. The name key is used for matching.
+	Names []string `json:"names,omitempty"`
+
 	// Values contains key/value pairs which are passed directly as parameters to the template
 	Values map[string]string `json:"values,omitempty"`
 }

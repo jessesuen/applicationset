@@ -283,6 +283,11 @@ func (in *ClusterGenerator) DeepCopyInto(out *ClusterGenerator) {
 	*out = *in
 	in.Selector.DeepCopyInto(&out.Selector)
 	in.Template.DeepCopyInto(&out.Template)
+	if in.Names != nil {
+		in, out := &in.Names, &out.Names
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.Values != nil {
 		in, out := &in.Values, &out.Values
 		*out = make(map[string]string, len(*in))
