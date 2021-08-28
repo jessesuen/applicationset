@@ -54,7 +54,7 @@ In this example, the cluster secret's `name` and `server` fields are used to pop
 
 ### Label selector
 
-A label selector may be used to narrow the scope of targeted clusters to only those matching a specific label:
+A label selector may be used to narrow the scope of targeted clusters to only those matching a set of labels:
 ```yaml
 kind: ApplicationSet
 metadata:
@@ -86,20 +86,8 @@ The cluster selector also supports set-based requirements, as used by [several c
 ### Deploying to the local cluster
 
 In Argo CD, the 'local cluster' is the cluster upon which Argo CD (and the ApplicationSet controller) is installed. This is to distinguish it from 'remote clusters', which are those that are added to Argo CD [declaratively](https://argoproj.github.io/argo-cd/operator-manual/declarative-setup/#clusters) or via the [Argo CD CLI](https://argoproj.github.io/argo-cd/getting_started/#5-register-a-cluster-to-deploy-apps-to-optional).
- 
-The cluster generator will automatically target both local and non-local clusters, for every cluster that matches the cluster selector.
 
-If you wish to target only remote clusters with your Applications (e.g. you want to exclude the local cluster), then use a cluster selector with labels, for example:
-```yaml
-spec:
-  generators:
-  - clusters:
-      selector:
-        matchLabels:
-          argocd.argoproj.io/secret-type: cluster
-```
-
-This selector will not match the default local cluster, since the default local cluster does not have a Secret (and thus does not have the `argocd.argoproj.io/secret-type` label on that secret). Any cluster selector that selects on that label will automatically exclude the default local cluster.
+Where the selector is empty, the Cluster generator will automatically target all clusters, both local and non-local. Otherwise, it will discover only clusters with secrets, which are by default only remote clusters.
 
 However, if you do wish to target both local and non-local clusters, while also using label matching, you can create a secret for the local cluster within the Argo CD web UI:
 
