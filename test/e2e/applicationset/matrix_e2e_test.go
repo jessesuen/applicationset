@@ -89,7 +89,7 @@ func TestListMatrixGenerator(t *testing.T) {
 								{
 									Git: &v1alpha1.GitGenerator{
 										RepoURL: "https://github.com/argoproj/argocd-example-apps.git",
-										Directories: []v1alpha1.GitDirectoryGeneratorItem{
+										Directories: []v1alpha1.GitGeneratorItem{
 											{
 												Path: "*guestbook*",
 											},
@@ -216,7 +216,7 @@ func TestClusterMatrixGenerator(t *testing.T) {
 								{
 									Git: &v1alpha1.GitGenerator{
 										RepoURL: "https://github.com/argoproj/argocd-example-apps.git",
-										Directories: []v1alpha1.GitDirectoryGeneratorItem{
+										Directories: []v1alpha1.GitGeneratorItem{
 											{
 												Path: "*guestbook*",
 											},

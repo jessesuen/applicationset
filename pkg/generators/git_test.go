@@ -50,7 +50,7 @@ func TestGitGenerateParamsFromDirectories(t *testing.T) {
 
 	cases := []struct {
 		name          string
-		directories   []argoprojiov1alpha1.GitDirectoryGeneratorItem
+		directories   []argoprojiov1alpha1.GitGeneratorItem
 		repoApps      []string
 		repoError     error
 		expected      []map[string]string
@@ -58,7 +58,7 @@ func TestGitGenerateParamsFromDirectories(t *testing.T) {
 	}{
 		{
 			name:        "happy flow - created apps",
-			directories: []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "*"}},
+			directories: []argoprojiov1alpha1.GitGeneratorItem{{Path: "*"}},
 			repoApps: []string{
 				"app1",
 				"app2",
@@ -75,7 +75,7 @@ func TestGitGenerateParamsFromDirectories(t *testing.T) {
 		},
 		{
 			name:        "It filters application according to the paths",
-			directories: []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "p1/*"}, {Path: "p1/*/*"}},
+			directories: []argoprojiov1alpha1.GitGeneratorItem{{Path: "p1/*"}, {Path: "p1/*/*"}},
 			repoApps: []string{
 				"app1",
 				"p1/app2",
@@ -91,7 +91,7 @@ func TestGitGenerateParamsFromDirectories(t *testing.T) {
 		},
 		{
 			name:        "It filters application according to the paths with Exclude",
-			directories: []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "p1/*", Exclude: true}, {Path: "*"}, {Path: "*/*"}},
+			directories: []argoprojiov1alpha1.GitGeneratorItem{{Path: "p1/*", Exclude: true}, {Path: "*"}, {Path: "*/*"}},
 			repoApps: []string{
 				"app1",
 				"app2",
@@ -109,7 +109,7 @@ func TestGitGenerateParamsFromDirectories(t *testing.T) {
 		},
 		{
 			name:        "Expecting same exclude behavior with different order",
-			directories: []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "*"}, {Path: "*/*"}, {Path: "p1/*", Exclude: true}},
+			directories: []argoprojiov1alpha1.GitGeneratorItem{{Path: "*"}, {Path: "*/*"}, {Path: "p1/*", Exclude: true}},
 			repoApps: []string{
 				"app1",
 				"app2",
@@ -127,7 +127,7 @@ func TestGitGenerateParamsFromDirectories(t *testing.T) {
 		},
 		{
 			name:          "handles empty response from repo server",
-			directories:   []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "*"}},
+			directories:   []argoprojiov1alpha1.GitGeneratorItem{{Path: "*"}},
 			repoApps:      []string{},
 			repoError:     nil,
 			expected:      []map[string]string{},
@@ -135,7 +135,7 @@ func TestGitGenerateParamsFromDirectories(t *testing.T) {
 		},
 		{
 			name:          "handles error from repo server",
-			directories:   []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "*"}},
+			directories:   []argoprojiov1alpha1.GitGeneratorItem{{Path: "*"}},
 			repoApps:      []string{},
 			repoError:     fmt.Errorf("error"),
 			expected:      []map[string]string{},
@@ -189,7 +189,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 	cases := []struct {
 		name string
 		// files is the list of paths/globs to match
-		files []argoprojiov1alpha1.GitFileGeneratorItem
+		files []argoprojiov1alpha1.GitGeneratorItem
 		// repoFileContents maps repo path to the literal contents of that path
 		repoFileContents map[string][]byte
 		// if repoPathsError is non-nil, the call to GetPaths(...) will return this error value
@@ -199,7 +199,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 	}{
 		{
 			name:  "happy flow: create params from git files",
-			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
+			files: []argoprojiov1alpha1.GitGeneratorItem{{Path: "**/config.json"}},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.json": []byte(`{
    "cluster": {
@@ -253,7 +253,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 		},
 		{
 			name:             "handles error during getting repo paths",
-			files:            []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
+			files:            []argoprojiov1alpha1.GitGeneratorItem{{Path: "**/config.json"}},
 			repoFileContents: map[string][]byte{},
 			repoPathsError:   fmt.Errorf("paths error"),
 			expected:         []map[string]string{},
@@ -261,7 +261,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 		},
 		{
 			name:  "test invalid JSON file returns error",
-			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
+			files: []argoprojiov1alpha1.GitGeneratorItem{{Path: "**/config.json"}},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.json": []byte(`invalid json file`),
 			},
@@ -271,7 +271,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 		},
 		{
 			name:  "test JSON array",
-			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.json"}},
+			files: []argoprojiov1alpha1.GitGeneratorItem{{Path: "**/config.json"}},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.json": []byte(`
 [
@@ -320,7 +320,7 @@ func TestGitGenerateParamsFromFiles(t *testing.T) {
 		},
 		{
 			name:  "Test YAML flow",
-			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.yaml"}},
+			files: []argoprojiov1alpha1.GitGeneratorItem{{Path: "**/config.yaml"}},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.yaml": []byte(`
 cluster:
@@ -368,7 +368,7 @@ cluster:
 		},
 		{
 			name:  "test YAML array",
-			files: []argoprojiov1alpha1.GitFileGeneratorItem{{Path: "**/config.yaml"}},
+			files: []argoprojiov1alpha1.GitGeneratorItem{{Path: "**/config.yaml"}},
 			repoFileContents: map[string][]byte{
 				"cluster-config/production/config.yaml": []byte(`
 - cluster:
@@ -397,6 +397,38 @@ cluster:
 				{
 					"cluster.owner":           "john.doe@example.com",
 					"cluster.name":            "staging",
+					"cluster.address":         "https://kubernetes.default.svc",
+					"path":                    "cluster-config/production",
+					"path.basename":           "production",
+					"path[0]":                 "cluster-config",
+					"path.basenameNormalized": "production",
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Check that files are filtered",
+			files: []argoprojiov1alpha1.GitGeneratorItem{{Path: "**/config.yaml"},
+				{Path: "cluster-config/staging/config.yaml", Exclude: true}},
+			repoFileContents: map[string][]byte{
+				"cluster-config/production/config.yaml": []byte(`
+cluster:
+  owner: john.doe@example.com
+  name: production
+  address: https://kubernetes.default.svc
+`),
+				"cluster-config/staging/config.yaml": []byte(`
+cluster:
+  owner: foo.bar@example.com
+  name: staging
+  address: https://kubernetes.default.svc
+`),
+			},
+			repoPathsError: nil,
+			expected: []map[string]string{
+				{
+					"cluster.owner":           "john.doe@example.com",
+					"cluster.name":            "production",
 					"cluster.address":         "https://kubernetes.default.svc",
 					"path":                    "cluster-config/production",
 					"path.basename":           "production",

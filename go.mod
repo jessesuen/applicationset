@@ -6,6 +6,7 @@ require (
 	github.com/argoproj/argo-cd/v2 v2.3.0-rc5.0.20220225234205-31676e2aea6f
 	github.com/argoproj/gitops-engine v0.6.0
 	github.com/argoproj/pkg v0.11.1-0.20211203175135-36c59d8fafe0
+	github.com/bmatcuk/doublestar/v4 v4.0.2
 	github.com/go-logr/logr v1.2.2
 	github.com/google/go-github/v35 v35.0.0
 	github.com/imdario/mergo v0.3.12
@@ -102,6 +103,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect

@@ -272,21 +272,17 @@ type DuckTypeGenerator struct {
 }
 
 type GitGenerator struct {
-	RepoURL             string                      `json:"repoURL"`
-	Directories         []GitDirectoryGeneratorItem `json:"directories,omitempty"`
-	Files               []GitFileGeneratorItem      `json:"files,omitempty"`
-	Revision            string                      `json:"revision"`
-	RequeueAfterSeconds *int64                      `json:"requeueAfterSeconds,omitempty"`
-	Template            ApplicationSetTemplate      `json:"template,omitempty"`
+	RepoURL             string                 `json:"repoURL"`
+	Directories         []GitGeneratorItem     `json:"directories,omitempty"`
+	Files               []GitGeneratorItem     `json:"files,omitempty"`
+	Revision            string                 `json:"revision"`
+	RequeueAfterSeconds *int64                 `json:"requeueAfterSeconds,omitempty"`
+	Template            ApplicationSetTemplate `json:"template,omitempty"`
 }
 
-type GitDirectoryGeneratorItem struct {
+type GitGeneratorItem struct {
 	Path    string `json:"path"`
 	Exclude bool   `json:"exclude,omitempty"`
-}
-
-type GitFileGeneratorItem struct {
-	Path string `json:"path"`
 }
 
 // SCMProviderGenerator defines a generator that scrapes a SCMaaS API to find candidate repos.

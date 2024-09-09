@@ -8,3 +8,4 @@ https://github.com/argoproj/applicationset/commit
 https://github.com/infra-team/cluster-deployments.git
 https://gitlab.example.com/
 https://kubernetes.default.svc
+https://github.com/argoproj/applicationset/tree/master/examples/git-generator-files-discovery/excludes

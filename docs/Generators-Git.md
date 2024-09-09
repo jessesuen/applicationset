@@ -238,6 +238,43 @@ In addition to the flattened key/value pairs from the configuration file, the fo
 - `{{path.basename}}`: Basename of the path to the folder containing the configuration file (e.g. `clusterA`, with the above example.)
 - `{{path.basenameNormalized}}`: This field is the same as `path.basename` with unsupported characters replaced with `-` (e.g. a `path` of `/directory/directory_2`, and `path.basename` of `directory_2` would produce `directory-2` here).
 
+### Exclude files
+
+The Git file generator also supports an `exclude` option in order to exclude files in the repository from being scanned by the ApplicationSet controller:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-addons
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/argoproj/applicationset.git
+      revision: HEAD
+      directories:
+      - path: "examples/git-generator-files-discovery/cluster-config/**/config.json"
+      - path: "examples/git-generator-files-discovery/cluster-config/*/test/config.json"
+        exclude: true
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/argoproj/applicationset.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+```
+(*The full example can be found [here](https://github.com/argoproj/applicationset/tree/master/examples/git-generator-files-discovery/excludes).*)
+
+This example excludes the config.json file in the `test` directory from the list of files scanned for this `ApplictionSet` resource.
+
+File exclude paths are matched using [doublestar.Match](https://github.com/bmatcuk/doublestar/blob/master/match.go#L8)
+
 ## Webhook Configuration
 
 When using a Git generator, ApplicationSet polls Git repositories every three minutes to detect changes. To eliminate

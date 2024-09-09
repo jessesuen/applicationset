@@ -15,7 +15,7 @@ func TestMatrixGenerate(t *testing.T) {
 	gitGenerator := &argoprojiov1alpha1.GitGenerator{
 		RepoURL:     "RepoURL",
 		Revision:    "Revision",
-		Directories: []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "*"}},
+		Directories: []argoprojiov1alpha1.GitGeneratorItem{{Path: "*"}},
 	}
 
 	listGenerator := &argoprojiov1alpha1.ListGenerator{
@@ -183,7 +183,7 @@ func TestMatrixGetRequeueAfter(t *testing.T) {
 	gitGenerator := &argoprojiov1alpha1.GitGenerator{
 		RepoURL:     "RepoURL",
 		Revision:    "Revision",
-		Directories: []argoprojiov1alpha1.GitDirectoryGeneratorItem{{Path: "*"}},
+		Directories: []argoprojiov1alpha1.GitGeneratorItem{{Path: "*"}},
 	}
 
 	listGenerator := &argoprojiov1alpha1.ListGenerator{
