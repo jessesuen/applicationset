@@ -257,35 +257,36 @@ func TestNoFilters(t *testing.T) {
 	assert.Equal(t, "three", repos[2].Repository)
 }
 
-// tests the getApplicableFilters function, passing in all the filters, and an unset filter, plus an additional
+// tests the filters segmentation functions, passing in all the filters, and an unset filter, plus an additional
 // branch filter
 func TestApplicableFilterMap(t *testing.T) {
 	branchFilter := Filter{
 		BranchMatch: &regexp.Regexp{},
-		FilterType:  FilterTypeBranch,
 	}
 	repoFilter := Filter{
 		RepositoryMatch: &regexp.Regexp{},
-		FilterType:      FilterTypeRepo,
 	}
 	pathExistsFilter := Filter{
 		PathsExist: []string{"test"},
-		FilterType: FilterTypeBranch,
 	}
 	labelMatchFilter := Filter{
 		LabelMatch: &regexp.Regexp{},
-		FilterType: FilterTypeRepo,
 	}
 	unsetFilter := Filter{
 		LabelMatch: &regexp.Regexp{},
 	}
 	additionalBranchFilter := Filter{
 		BranchMatch: &regexp.Regexp{},
-		FilterType:  FilterTypeBranch,
 	}
-	filterMap := getApplicableFilters([]*Filter{&branchFilter, &repoFilter,
-		&pathExistsFilter, &labelMatchFilter, &unsetFilter, &additionalBranchFilter})
+	bothFilter := Filter{
+		RepositoryMatch: &regexp.Regexp{},
+		PathsExist:      []string{"test"},
+	}
+	filters := Filters{&branchFilter, &repoFilter,
+		&pathExistsFilter, &labelMatchFilter, &unsetFilter, &additionalBranchFilter, &bothFilter}
+	repoFilters := filters.GetRepoFilters()
+	branchFilters := filters.GetBranchFilters()
 
-	assert.Len(t, filterMap[FilterTypeRepo], 2)
-	assert.Len(t, filterMap[FilterTypeBranch], 3)
+	assert.Len(t, repoFilters, 4)
+	assert.Len(t, branchFilters, 4)
 }
