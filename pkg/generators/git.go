@@ -67,6 +67,9 @@ func (g *GitGenerator) GenerateParams(appSetGenerator *argoprojiov1alpha1.Applic
 		return nil, err
 	}
 
+	// Add revision as a variable.
+	res = append(res, map[string]string{"revision": appSetGenerator.Git.Revision})
+
 	return res, nil
 }
 
