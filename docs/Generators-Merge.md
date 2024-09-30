@@ -32,7 +32,7 @@ spec:
               values:
                 kafka: 'true'
                 redis: 'false'
-          # For clusters with a specific label, enable Kafka.
+          # For clusters with a specific label, disable Kafka.
           - clusters:
               selector:
                 matchLabels:
