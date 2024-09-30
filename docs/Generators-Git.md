@@ -104,7 +104,7 @@ spec:
 ```
 (*The full example can be found [here](https://github.com/argoproj/applicationset/tree/master/examples/git-generator-directory/excludes).*)
 
-This example excludes the `exclude-helm-guestbook` directory from the list of directories scanned for this `ApplictionSet` resource.
+This example excludes the `exclude-helm-guestbook` directory from the list of directories scanned for this `ApplicationSet` resource.
 
 !!! note "Exclude rules have higher priority than include rules"
 
