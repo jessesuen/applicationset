@@ -33,6 +33,7 @@ metadata:
 spec:
   generators:
   - pullRequest:
+      requeueAfterSeconds: 1800
       github:
         # The GitHub organization or user.
         owner: myorg
@@ -47,7 +48,6 @@ spec:
         # Labels is used to filter the PRs that you want to target. (optional)
         labels:
         - preview
-  requeueAfterSeconds: 1800
   template:
   # ...
 ```
