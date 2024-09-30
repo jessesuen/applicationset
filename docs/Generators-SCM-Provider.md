@@ -192,6 +192,7 @@ spec:
 ```
 
 * `organization`: The name of the organization the repository is in.
+* `organizationNormalized`: The `name` of the organization the repository is in *but normalized to contain only lowercase alphanumeric characters, '-' or '.'*.
 * `repository`: The name of the repository.
 * `url`: The clone URL for the repository.
 * `branch`: The default branch of the repository.

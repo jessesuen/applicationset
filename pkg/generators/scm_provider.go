@@ -98,12 +98,13 @@ func (g *SCMProviderGenerator) GenerateParams(appSetGenerator *argoprojiov1alpha
 	params := make([]map[string]string, 0, len(repos))
 	for _, repo := range repos {
 		params = append(params, map[string]string{
-			"organization": repo.Organization,
-			"repository":   repo.Repository,
-			"url":          repo.URL,
-			"branch":       repo.Branch,
-			"sha":          repo.SHA,
-			"labels":       strings.Join(repo.Labels, ","),
+			"organization":           repo.Organization,
+			"organizationNormalized": sanitizeName(repo.Organization),
+			"repository":             repo.Repository,
+			"url":                    repo.URL,
+			"branch":                 repo.Branch,
+			"sha":                    repo.SHA,
+			"labels":                 strings.Join(repo.Labels, ","),
 		})
 	}
 	return params, nil

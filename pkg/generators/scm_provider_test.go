@@ -97,6 +97,13 @@ func TestSCMProviderGenerateParams(t *testing.T) {
 				Branch:       "main",
 				SHA:          "00000000",
 			},
+			{
+				Organization: "myorg/myteam",
+				Repository:   "repo3",
+				URL:          "git@github.com:myorg/myteam/repo2.git",
+				Branch:       "main",
+				SHA:          "00000000",
+			},
 		},
 	}
 	gen := &SCMProviderGenerator{overrideProvider: mockProvider}
@@ -106,6 +113,8 @@ func TestSCMProviderGenerateParams(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, params, 2)
 	assert.Equal(t, "myorg", params[0]["organization"])
+	assert.Equal(t, "myorg", params[0]["organizationNormalized"])
+	assert.Equal(t, "myorg/myteam", params[2]["organizationNormalized"])
 	assert.Equal(t, "repo1", params[0]["repository"])
 	assert.Equal(t, "git@github.com:myorg/repo1.git", params[0]["url"])
 	assert.Equal(t, "main", params[0]["branch"])
